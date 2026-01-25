@@ -61,6 +61,51 @@ export const tmdbService = {
     return data.results;
   },
 
+  // Get movies by genre
+  getMoviesByGenre: async (genreId: number): Promise<Movie[]> => {
+    const response = await fetch(
+      `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`
+    );
+    const data = await response.json();
+    return data.results;
+  },
+
+  // Get TV shows by genre
+  getTVShowsByGenre: async (genreId: number): Promise<Movie[]> => {
+    const response = await fetch(
+      `${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`
+    );
+    const data = await response.json();
+    return data.results;
+  },
+
+  // Get upcoming movies (New & Popular)
+  getUpcoming: async (): Promise<Movie[]> => {
+    const response = await fetch(
+      `${TMDB_BASE_URL}/movie/upcoming?api_key=${TMDB_API_KEY}`
+    );
+    const data = await response.json();
+    return data.results;
+  },
+
+  // Get now playing movies
+  getNowPlaying: async (): Promise<Movie[]> => {
+    const response = await fetch(
+      `${TMDB_BASE_URL}/movie/now_playing?api_key=${TMDB_API_KEY}`
+    );
+    const data = await response.json();
+    return data.results;
+  },
+
+  // Search movies and TV shows
+  search: async (query: string): Promise<Movie[]> => {
+    const response = await fetch(
+      `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+    );
+    const data = await response.json();
+    return data.results.filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv');
+  },
+
   // Helper: Get full poster URL
   getPosterUrl: (path: string, size: 'w185' | 'w342' | 'w500' | 'original' = 'w342'): string => {
     return path ? `${TMDB_IMAGE_BASE_URL}/${size}${path}` : '/placeholder.png';
@@ -78,4 +123,35 @@ export const tmdbService = {
     );
     return await response.json();
   },
+};
+
+// Genre IDs from TMDB
+export const GENRES = {
+  ACTION: 28,
+  ADVENTURE: 12,
+  ANIMATION: 16,
+  COMEDY: 35,
+  CRIME: 80,
+  DOCUMENTARY: 99,
+  DRAMA: 18,
+  FAMILY: 10751,
+  FANTASY: 14,
+  HISTORY: 36,
+  HORROR: 27,
+  MUSIC: 10402,
+  MYSTERY: 9648,
+  ROMANCE: 10749,
+  SCIENCE_FICTION: 878,
+  THRILLER: 53,
+  WAR: 10752,
+  WESTERN: 37,
+  // TV Genres
+  ACTION_ADVENTURE: 10759,
+  KIDS: 10762,
+  NEWS: 10763,
+  REALITY: 10764,
+  SCI_FI_FANTASY: 10765,
+  SOAP: 10766,
+  TALK: 10767,
+  WAR_POLITICS: 10768,
 };

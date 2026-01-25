@@ -15,6 +15,10 @@ interface ProfileContextType {
   setCurrentProfile: (profile: Profile) => void;
   switchProfile: (profile: Profile) => void;
   loading: boolean;
+  addProfile: (name: string, color: string) => Promise<void>;
+  updateProfile: (id: number, name: string, color: string) => Promise<void>;
+  deleteProfile: (id: number) => Promise<void>;
+  refreshProfiles: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -26,7 +30,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Fetch profiles when user changes
   useEffect(() => {
     if (user) {
       fetchProfiles();
@@ -40,7 +43,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const fetchProfiles = async () => {
     if (!user) return;
-
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -53,21 +56,17 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data && data.length > 0) {
         setProfiles(data);
         
-        // Try to restore saved profile
         const savedProfile = localStorage.getItem('currentProfile');
         if (savedProfile) {
           const parsed = JSON.parse(savedProfile);
-          // Verify this profile still exists in database
           const profileExists = data.find(p => p.id === parsed.id);
           if (profileExists) {
             setCurrentProfile(profileExists);
           } else {
-            // Saved profile doesn't exist anymore, clear it
             localStorage.removeItem('currentProfile');
           }
         }
       } else {
-        // Create first default profile for new user
         await createDefaultProfile();
       }
     } catch (error) {
@@ -79,7 +78,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const createDefaultProfile = async () => {
     if (!user) return;
-
+    
     const defaultProfile = {
       user_id: user.id,
       name: user.email?.split('@')[0] || 'User',
@@ -102,8 +101,90 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     navigate(`/browse/${profile.id}`);
   };
 
+  // NEW: Add profile
+  const addProfile = async (name: string, color: string) => {
+    if (!user) throw new Error('No user logged in');
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert([{
+        user_id: user.id,
+        name: name.trim(),
+        color: color,
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    await refreshProfiles();
+  };
+
+  // NEW: Update profile
+  const updateProfile = async (id: number, name: string, color: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name: name.trim(),
+        color: color,
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    // Update currentProfile if it's the one being edited
+    if (currentProfile?.id === id) {
+      const updatedProfile = { ...currentProfile, name: name.trim(), color };
+      setCurrentProfile(updatedProfile);
+      localStorage.setItem('currentProfile', JSON.stringify(updatedProfile));
+    }
+
+    await refreshProfiles();
+  };
+
+  // NEW: Delete profile
+  const deleteProfile = async (id: number) => {
+    // If deleting current profile, switch to first remaining profile
+    if (currentProfile?.id === id) {
+      const remainingProfiles = profiles.filter(p => p.id !== id);
+      if (remainingProfiles.length > 0) {
+        setCurrentProfile(remainingProfiles[0]);
+        localStorage.setItem('currentProfile', JSON.stringify(remainingProfiles[0]));
+      } else {
+        setCurrentProfile(null);
+        localStorage.removeItem('currentProfile');
+      }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await refreshProfiles();
+  };
+
+  // NEW: Refresh profiles
+  const refreshProfiles = async () => {
+    await fetchProfiles();
+  };
+
   return (
-    <ProfileContext.Provider value={{ profiles, currentProfile, setCurrentProfile, switchProfile, loading }}>
+    <ProfileContext.Provider
+      value={{
+        profiles,
+        currentProfile,
+        setCurrentProfile,
+        switchProfile,
+        loading,
+        addProfile,
+        updateProfile,
+        deleteProfile,
+        refreshProfiles,
+      }}
+    >
       {children}
     </ProfileContext.Provider>
   );

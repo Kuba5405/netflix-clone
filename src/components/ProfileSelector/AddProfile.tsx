@@ -1,4 +1,5 @@
 import React from 'react';
+import { AiOutlinePlus } from 'react-icons/ai';
 
 interface AddProfileProps {
   onClick?: () => void;
@@ -7,19 +8,13 @@ interface AddProfileProps {
 const AddProfile: React.FC<AddProfileProps> = ({ onClick }) => {
   return (
     <div 
-      className="flex flex-col items-center cursor-pointer group"
       onClick={onClick}
+      className="group cursor-pointer"
     >
-      <div className="w-40 h-40 bg-transparent border-4 border-gray-600 rounded-md flex items-center justify-center group-hover:border-white transition-all duration-200">
-        <svg
-          className="w-16 h-16 text-gray-600 group-hover:text-white transition-colors"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+      <div className="w-32 h-32 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-gray-800 hover:bg-gray-700 hover:border-gray-400 transition">
+        <AiOutlinePlus className="text-gray-400 group-hover:text-white transition" size={48} />
       </div>
-      <p className="text-gray-400 text-xl mt-4 group-hover:text-white transition-colors">
+      <p className="text-gray-400 group-hover:text-white text-center mt-3 transition">
         Add Profile
       </p>
     </div>
