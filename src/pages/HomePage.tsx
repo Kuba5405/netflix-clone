@@ -267,6 +267,8 @@ function HomePage() {
           description={featuredMovie.overview}
           backgroundImage={tmdbService.getBackdropUrl(featuredMovie.backdrop_path)}
           trailerUrl=""
+          onPlayClick={() => handleMovieClick(featuredMovie)}
+          onMoreInfoClick={() => handleMovieClick(featuredMovie)}
         />
       )}
 

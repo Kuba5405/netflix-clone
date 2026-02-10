@@ -7,12 +7,10 @@ import VideoPlayer from "./components/Browse/VideoPlayer";
 import { tmdbService, type Movie } from './services/tmdb';
 import { watchlistService } from './services/watchlist';
 import { watchHistoryService } from './services/watchHistory';
-import { useAuth } from './contexts/AuthContext';
 import { useProfile } from './contexts/ProfileContext';
 
 function Notflix() {
   const { profileId } = useParams();
-  const { user } = useAuth();
   const { currentProfile, profiles } = useProfile();
   const navigate = useNavigate();
 
@@ -220,6 +218,8 @@ function Notflix() {
           description={featuredMovie.overview}
           backgroundImage={tmdbService.getBackdropUrl(featuredMovie.backdrop_path)}
           trailerUrl=""
+          onPlayClick={() => handleMovieClick(featuredMovie)}
+          onMoreInfoClick={() => handleMovieClick(featuredMovie)}
         />
       )}
 

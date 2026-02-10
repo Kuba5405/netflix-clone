@@ -7,16 +7,25 @@ interface BannerProps {
   description?: string;
   backgroundImage: string;
   trailerUrl?: string;
+  onPlayClick: () => void;
+  onMoreInfoClick: () => void;
 }
 
-const Banner: React.FC<BannerProps> = ({ title, description, backgroundImage, trailerUrl }) => {
+const Banner: React.FC<BannerProps> = ({ 
+  title, 
+  description, 
+  backgroundImage, 
+  trailerUrl,
+  onPlayClick,
+  onMoreInfoClick
+}) => {
   const bannerRef = useRef<HTMLDivElement>(null);
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     if (!trailerUrl) return;
 
-    let timer: NodeJS.Timeout | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -49,8 +58,8 @@ const Banner: React.FC<BannerProps> = ({ title, description, backgroundImage, tr
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${backgroundImage})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-black via-transparent to-transparent" />
         </>
       ) : (
         <video
@@ -74,11 +83,18 @@ const Banner: React.FC<BannerProps> = ({ title, description, backgroundImage, tr
         )}
 
         <div className="flex gap-3">
-          <button className="bg-white text-black px-6 py-2 rounded flex items-center gap-2 hover:bg-opacity-80 transition">
+          <button 
+            onClick={onPlayClick}
+            className="bg-white text-black px-6 py-2 rounded flex items-center gap-2 hover:bg-opacity-80 transition"
+          >
             <FaPlay className="text-black" />
             Play
           </button>
-          <button className="bg-gray-500 bg-opacity-50 text-white px-6 py-2 rounded flex items-center gap-2 hover:bg-opacity-40 transition">
+          
+          <button 
+            onClick={onMoreInfoClick}
+            className="bg-gray-500 bg-opacity-50 text-white px-6 py-2 rounded flex items-center gap-2 hover:bg-opacity-40 transition"
+          >
             <MdInfoOutline className="text-white text-xl" />
             More Info
           </button>

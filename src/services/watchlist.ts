@@ -16,7 +16,7 @@ export const watchlistService = {
       .from('movies')
       .select('id')
       .eq('tmdb_id', movie.id.toString())
-      .single();
+      .maybeSingle();
 
     let movieId = existingMovie?.id;
 
@@ -67,7 +67,7 @@ export const watchlistService = {
       .from('movies')
       .select('id')
       .eq('tmdb_id', tmdbId.toString())
-      .single();
+      .maybeSingle();
 
     if (!movie) return;
 
@@ -114,7 +114,7 @@ export const watchlistService = {
       .from('movies')
       .select('id')
       .eq('tmdb_id', tmdbId.toString())
-      .single();
+      .maybeSingle();
 
     if (!movie) return false;
 
@@ -123,7 +123,7 @@ export const watchlistService = {
       .select('id')
       .eq('profile_id', profileId)
       .eq('movie_id', movie.id)
-      .single();
+      .maybeSingle();
 
     return !!data;
   },

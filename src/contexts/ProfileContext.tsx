@@ -28,9 +28,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (user) {
       fetchProfiles();
     } else {
@@ -39,7 +41,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       localStorage.removeItem('currentProfile');
       setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const fetchProfiles = async () => {
     if (!user) return;
@@ -56,17 +58,32 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data && data.length > 0) {
         setProfiles(data);
         
-        const savedProfile = localStorage.getItem('currentProfile');
-        if (savedProfile) {
-          const parsed = JSON.parse(savedProfile);
-          const profileExists = data.find(p => p.id === parsed.id);
-          if (profileExists) {
-            setCurrentProfile(profileExists);
-          } else {
+        // Try to restore saved profile from localStorage
+        const savedProfileStr = localStorage.getItem('currentProfile');
+        let profileToSet = null;
+        
+        if (savedProfileStr) {
+          try {
+            const savedProfile = JSON.parse(savedProfileStr);
+            // Find the profile by ID (important: match by id, not entire object)
+            profileToSet = data.find(p => p.id === savedProfile.id);
+          } catch (e) {
+            console.error('Error parsing saved profile:', e);
             localStorage.removeItem('currentProfile');
           }
         }
+        
+        // If no saved profile found or it doesn't exist anymore, use first profile
+        if (!profileToSet) {
+          profileToSet = data[0];
+        }
+        
+        // Set the profile and save to localStorage
+        setCurrentProfile(profileToSet);
+        localStorage.setItem('currentProfile', JSON.stringify(profileToSet));
+        
       } else {
+        // No profiles exist, create default one
         await createDefaultProfile();
       }
     } catch (error) {
@@ -78,7 +95,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const createDefaultProfile = async () => {
     if (!user) return;
-    
+
     const defaultProfile = {
       user_id: user.id,
       name: user.email?.split('@')[0] || 'User',
@@ -90,8 +107,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .insert([defaultProfile])
       .select();
 
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setProfiles(data);
+      setCurrentProfile(data[0]);
+      localStorage.setItem('currentProfile', JSON.stringify(data[0]));
     }
   };
 
@@ -101,11 +120,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     navigate(`/browse/${profile.id}`);
   };
 
-  // NEW: Add profile
+  // Add profile
   const addProfile = async (name: string, color: string) => {
     if (!user) throw new Error('No user logged in');
-    
-    const { data, error } = await supabase
+
+    const { error } = await supabase
       .from('profiles')
       .insert([{
         user_id: user.id,
@@ -116,11 +135,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .single();
 
     if (error) throw error;
-    
     await refreshProfiles();
   };
 
-  // NEW: Update profile
+  // Update profile
   const updateProfile = async (id: number, name: string, color: string) => {
     const { error } = await supabase
       .from('profiles')
@@ -142,7 +160,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     await refreshProfiles();
   };
 
-  // NEW: Delete profile
+  // Delete profile
   const deleteProfile = async (id: number) => {
     // If deleting current profile, switch to first remaining profile
     if (currentProfile?.id === id) {
@@ -162,11 +180,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .eq('id', id);
 
     if (error) throw error;
-
     await refreshProfiles();
   };
 
-  // NEW: Refresh profiles
+  // Refresh profiles
   const refreshProfiles = async () => {
     await fetchProfiles();
   };

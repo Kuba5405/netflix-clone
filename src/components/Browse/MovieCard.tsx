@@ -23,13 +23,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
   const title = movie.title || movie.name || 'Unknown';
   const posterUrl = tmdbService.getPosterUrl(movie.poster_path);
-
+  
   return (
     <div className="group relative cursor-pointer transition-transform duration-200 ease-out md:hover:scale-105">
       <img
         src={posterUrl}
         alt={title}
-        className="rounded-sm object-cover w-full h-auto aspect-[2/3]"
+        className="rounded-sm object-cover w-full h-auto aspect-2/3"
         loading="lazy"
       />
       
@@ -40,7 +40,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="absolute top-2 right-2 bg-black bg-opacity-80 hover:bg-opacity-100 rounded-full p-1.5 transition opacity-0 group-hover:opacity-100 z-10"
+          className="absolute top-5 right-5 bg-black bg-opacity-80 hover:bg-opacity-100 rounded-full p-1.5 transition opacity-0 group-hover:opacity-100 z-10"
           title="Remove"
         >
           <AiOutlineClose className="text-white text-sm" />
@@ -48,7 +48,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
       )}
       
       {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-80 transition-all duration-200 rounded-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 p-4">
+      <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-80 transition-opacity duration-200 rounded-sm pointer-events-none" />
+      
+      {/* Hover overlay content */}
+      <div className="absolute inset-0 rounded-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-4 pointer-events-auto">
         <p className="text-white text-xs md:text-sm font-semibold text-center mb-4">
           {title}
         </p>
@@ -60,7 +63,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               e.stopPropagation();
               onClick();
             }}
-            className="bg-white hover:bg-gray-200 text-black rounded-full p-2 transition"
+            className="bg-gray-800 hover:bg-gray-700 text-white rounded-full p-2 transition border-2 border-gray-600"
             title="Play"
           >
             <FaPlay className="text-sm" />
@@ -85,5 +88,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
     </div>
   );
 };
+
 
 export default MovieCard;

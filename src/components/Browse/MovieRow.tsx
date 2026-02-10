@@ -58,10 +58,10 @@ const MovieRow: React.FC<MovieRowProps> = ({
 
         <div
           ref={rowRef}
-          className="flex gap-2 overflow-x-scroll scrollbar-hide scroll-smooth"
+          className="flex gap-2 overflow-x-scroll overflow-y-hidden scrollbar-hide scroll-smooth"
         >
           {movies.map((movie) => (
-            <div key={movie.id} className="min-w-[120px] sm:min-w-[150px] md:min-w-[180px] lg:min-w-[240px] flex-shrink-0">
+            <div key={movie.id} className="min-w-[120px] sm:min-w-[150px] md:min-w-[180px] lg:min-w-60 shrink-0">
               <MovieCard 
                 movie={movie} 
                 onClick={() => onMovieClick(movie)}
